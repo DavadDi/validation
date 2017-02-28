@@ -1,21 +1,30 @@
-# validation
-
+validation
+=====================
  
 The Simpler Validation in go. 
 
-* Use **interface** for Valiater
+* Use **interface** for Validater
 * Support User define Validater
 * Support Struct define validater interface
 * Support slice/array/pointer and netestd struct validate. Not for map now!
 
 
-## Install
+## Install and tests
+
+Install:
 
 ```
-$go get https://www.github.com/DavadDi/validation
+$go get github.com/DavadDi/validation
 ```
 
-## Simple Useage
+Test:
+
+```
+$go test github.com/DavadDi/validation
+```
+
+
+## Simple Usage
 
 ```go
 
@@ -69,6 +78,11 @@ func main() {
 	}
 }
 ```
+
+#### Struct Tag Functions:
+	required
+	email
+	url
 
 ### Output:
 	Person1 validate succeed!
@@ -136,7 +150,7 @@ func main() {
 	Person1 validate failed. [Age] check failed [field can't be empty or zero] [0]
 
 ## Collaborate with Struct Interface
-
+Use struct define validater need impl the interface **TValidater() error**.
 ```go
 package main
 
@@ -201,3 +215,8 @@ Turn off Debug
 ```go
 validation.EnableDebug(false)
 ```
+
+## LICENSE
+
+BSD License http://creativecommons.org/licenses/BSD/
+
