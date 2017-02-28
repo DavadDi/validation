@@ -156,7 +156,6 @@ func (cvm *CustomValidators) AddValidater(name string, validater Validater) erro
 
 	cvm.Lock()
 	cvm.validatorsMap[name] = validater
-	debugf("Add custom validater [%s] succeed!", name)
 	cvm.Unlock()
 
 	return nil
