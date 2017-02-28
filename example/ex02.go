@@ -31,8 +31,6 @@ func (ac *AgeChecker) Validater(v interface{}) error {
 }
 
 func main() {
-	validation.Debug(true)
-
 	validation.AddValidater("age", &AgeChecker{})
 
 	person1 := &Person{

@@ -63,7 +63,7 @@ func main() {
 		fmt.Println("Person1 validate succeed!")
 	}
 
-	validater.Clear()
+	validater.Reset()
 	person2 := &Person{
 		Email:    "dwh0403@163.com",
 		WebSites: []string{web1, web2},

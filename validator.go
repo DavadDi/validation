@@ -1,3 +1,11 @@
+/*
+Package validation implements a simple library for struct tag validte.
+
+	1. Use interface for Validater
+	2. Support User define Validater
+	3. Support Struct define validater interface
+	4. Support slice/array/pointer and netestd struct validate. Not for map now!
+*/
 package validation
 
 import (
@@ -43,7 +51,7 @@ import (
 //			fmt.Println("Person1 validate succeed!")
 //		}
 //
-//		validater.Clear()
+//		validater.Reset()
 //		person2 := &Person{
 //			Email:    "dwh0403@163.com",
 //			WebSites: []string{web1, web2},
@@ -58,11 +66,7 @@ import (
 //		}
 //	}
 
-// Pkg init(), only set log debug
-func init() {
-	// log.SetFlags(log.Lshortfile | log.LstdFlags)
-}
-
+// Interface
 // For use define stuct, without params
 // If validate struct has this interface, we will call this interface firstly
 type TValidater interface {
@@ -76,69 +80,69 @@ type Validater interface {
 
 // Global var for validation pkg
 const (
-	ValidTag      = "valid" // Validater tag name
-	FuncSeparator = ";"     // Func sparator "required;email"
-	ValidIgnor    = "-"     // Igore for validater
-	RequiredKey   = "required"
+	ValidTag      = "valid"    // Validater tag name
+	FuncSeparator = ";"        // Func sparator "required;email"
+	ValidIgnor    = "-"        // Igore for validater
+	RequiredKey   = "required" // required key for not empty value
 )
 
 var (
 	// Init by this pkg. no need rwlock
-	ValidatorsMap = map[string]Validater{
-		"email":     &EmailChecker{},
+	validatorsMap = map[string]Validater{
 		RequiredKey: &RequiredChecker{},
+		"email":     &EmailChecker{},
 		"url":       &UrlChecker{},
 	}
 
 	// Using rwlock avoid race
-	CustomValidatorsMap = NewCustomValidators()
+	customValidatorsMap = newCustomValidators()
 
 	// Output debug info or not
-	DebugFlag = false
+	debugFlag = false
 )
 
 // Pkg debug function, just a wrapper for log
-func Debug(arg interface{}) {
-	if DebugFlag {
+func debug(arg interface{}) {
+	if debugFlag {
 		log.Print(arg)
 	}
 }
 
-func Debugf(format string, args ...interface{}) {
-	if DebugFlag {
+func debugf(format string, args ...interface{}) {
+	if debugFlag {
 		log.Printf(format, args...)
 	}
 }
 
 // Enable validation debug log
 func EnableDebug(flag bool) {
-	DebugFlag = flag
+	debugFlag = flag
 }
 
 // Return a new custom validater manager
-func NewCustomValidators() *CustomValidators {
+func newCustomValidators() *CustomValidators {
 	return &CustomValidators{
-		ValidatorsMap: make(map[string]Validater),
+		validatorsMap: make(map[string]Validater),
 	}
 }
 
 // Function export to add user define Validater
 func AddValidater(name string, validater Validater) error {
-	if CustomValidatorsMap == nil {
-		CustomValidatorsMap = NewCustomValidators()
+	if customValidatorsMap == nil {
+		customValidatorsMap = newCustomValidators()
 	}
 
-	return CustomValidatorsMap.AddValidater(name, validater)
+	return customValidatorsMap.AddValidater(name, validater)
 }
 
 // Because user can add user define validater, avoid data race, add rwlock
 type CustomValidators struct {
-	ValidatorsMap map[string]Validater
+	validatorsMap map[string]Validater
 	sync.RWMutex
 }
 
 // If name conflict with CustomValidators, replace.
-// conflict with ValidatorsMap, return err
+// conflict with validatorsMap, return err
 func (cvm *CustomValidators) AddValidater(name string, validater Validater) error {
 	// check validater
 	if validater == nil {
@@ -146,22 +150,22 @@ func (cvm *CustomValidators) AddValidater(name string, validater Validater) erro
 	}
 
 	// check name conflict
-	if ValidatorsMap[name] != nil {
+	if validatorsMap[name] != nil {
 		return ErrValidaterExists
 	}
 
 	cvm.Lock()
-	cvm.ValidatorsMap[name] = validater
-	Debugf("Add custom validater [%s] succeed!", name)
+	cvm.validatorsMap[name] = validater
+	debugf("Add custom validater [%s] succeed!", name)
 	cvm.Unlock()
 
 	return nil
 }
 
-// Return user define validater for name
-func (cvm *CustomValidators) FindValidater(name string) (v Validater, ok bool) {
+// Return user define validater for namego
+func (cvm *CustomValidators) findValidater(name string) (v Validater, ok bool) {
 	cvm.RLock()
-	v, ok = cvm.ValidatorsMap[name]
+	v, ok = cvm.validatorsMap[name]
 	cvm.RUnlock()
 
 	return v, ok
@@ -176,6 +180,11 @@ func NewValidation() *Validation {
 	return &Validation{}
 }
 
+// Return Error list
+func (mv *Validation) Errs() []*Error {
+	return mv.Errors
+}
+
 // Return msg detail Error message
 func (mv *Validation) ErrMsg() string {
 	buf := bytes.NewBufferString("")
@@ -188,15 +197,9 @@ func (mv *Validation) ErrMsg() string {
 	return buf.String()
 }
 
-// Clear error, maybe not need
-func (mv *Validation) Clear() {
-	mv.Errors = nil
-}
-
-// Apend error to validtion
-func (mv *Validation) AddError(key string, v interface{}, err error) {
-	errtmp := &Error{FieldName: key, Value: v, Err: err}
-	mv.Errors = append(mv.Errors, errtmp)
+// Reset state to init
+func (mv *Validation) Reset() {
+	mv.clear()
 }
 
 // Check has errors or not
@@ -222,17 +225,17 @@ func (mv *Validation) Validate(obj interface{}) bool {
 	// Here only accept structs
 	if v.Kind() != reflect.Struct {
 		err := &ErrOnlyStrcut{Type: v.Type()}
-		mv.AddError("Object", obj, err)
+		mv.addError("Object", obj, err)
 		return false
 	}
 
-	Debugf("Check struct [%s]", t.Name())
+	debugf("Check struct [%s]", t.Name())
 
 	objvk, ok := obj.(TValidater)
 	if ok {
 		err := objvk.TValidater()
 		if err != nil {
-			mv.AddError("Object", obj, err)
+			mv.addError("Object", obj, err)
 		}
 	}
 
@@ -263,7 +266,7 @@ func (mv *Validation) Validate(obj interface{}) bool {
 }
 
 func (mv *Validation) checkRequire(v reflect.Value, t reflect.StructField) error {
-	rck := ValidatorsMap[RequiredKey]
+	rck := validatorsMap[RequiredKey]
 	return rck.Validater(v.Interface())
 }
 
@@ -279,7 +282,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 	// First check all field for required
 	if fns[RequiredKey] != nil {
 		if err := mv.checkRequire(v, t); err != nil {
-			mv.AddError(t.Name, v.Interface(), err)
+			mv.addError(t.Name, v.Interface(), err)
 		}
 
 		delete(fns, RequiredKey)
@@ -292,29 +295,29 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 		reflect.Float32, reflect.Float64,
 		reflect.String:
 
-		Debugf("\tCheck field [%s]", t.Name)
+		debugf("\tCheck field [%s]", t.Name)
 
 		for fname := range fns {
-			Debugf("CheckerName: [%s]", fname)
+			debugf("CheckerName: [%s]", fname)
 
 			// find custom map and pkg map
 			var vck Validater
 			var find bool
 
-			if vck, find = CustomValidatorsMap.FindValidater(fname); !find {
-				vck = ValidatorsMap[fname]
+			if vck, find = customValidatorsMap.findValidater(fname); !find {
+				vck = validatorsMap[fname]
 			}
 
 			if vck == nil {
 				err := fmt.Errorf("can't find checker for [%s]", fname)
-				mv.AddError(t.Name, v.Interface(), err)
-				Debugf("can't find checker for [%s]", fname)
+				mv.addError(t.Name, v.Interface(), err)
+				debugf("can't find checker for [%s]", fname)
 				continue
 			}
 
 			err := vck.Validater(v.Interface())
 			if err != nil {
-				mv.AddError(t.Name, v.Interface(), err)
+				mv.addError(t.Name, v.Interface(), err)
 			}
 		}
 
@@ -355,10 +358,21 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 	// case reflect.Map: // don't support map now
 	default:
 		err := fmt.Errorf("UnspportType %s", v.Type())
-		mv.AddError(t.Name, v.Interface(), err)
+		mv.addError(t.Name, v.Interface(), err)
 	}
 
 	return
+}
+
+// Clear error
+func (mv *Validation) clear() {
+	mv.Errors = nil
+}
+
+// Apend error to validtion
+func (mv *Validation) addError(key string, v interface{}, err error) {
+	errtmp := &Error{FieldName: key, Value: v, Err: err}
+	mv.Errors = append(mv.Errors, errtmp)
 }
 
 // Return fun names and params

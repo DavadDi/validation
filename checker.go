@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"fmt"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -100,10 +99,10 @@ func (uck *UrlChecker) Validater(v interface{}) error {
 
 	str, ok := v.(string)
 	if !ok {
-		return fmt.Errorf("expect string, but got %v", v)
+		return NewErrWrongType("string", v)
 	}
 
-	Debugf("UrlChecker: got [%s]", str)
+	debugf("UrlChecker: got [%s]", str)
 
 	if str == "" || utf8.RuneCountInString(str) >= maxURLRuneCount || len(str) <= minURLRuneCount || strings.HasPrefix(str, ".") {
 		return ErrBadUrlFormat
@@ -123,6 +122,6 @@ func (uck *UrlChecker) Validater(v interface{}) error {
 		return ErrBadUrlFormat
 	}
 
-	Debugf("UrlChecker: [%s] passed", str)
+	debugf("UrlChecker: [%s] passed", str)
 	return nil
 }

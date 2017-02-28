@@ -136,7 +136,7 @@ func TestNestedStruct(t *testing.T) {
 	res := validor.Validate(person)
 
 	if !res {
-		Debugf("TestNestedStruct: Error %s", validor.ErrMsg())
+		debugf("TestNestedStruct: Error %s", validor.ErrMsg())
 	}
 
 	if res {
