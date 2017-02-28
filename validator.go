@@ -385,7 +385,7 @@ func (mv *Validation) getValidFuns(tf reflect.StructField, tag string) map[strin
 
 	for _, value := range strings.Split(opt, FuncSeparator) {
 		// omit func has params for now
-		value := strings.TrimSpace(value)
+		value = strings.TrimSpace(value)
 		out[value] = struct{}{}
 	}
 
