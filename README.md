@@ -3,9 +3,9 @@ validation
  
 The Simpler Validation in go. 
 
-* Use **interface** for Validater
+* Use **func(v interface{}) error** for Validater
 * Support User define Validater
-* Support Struct define validater interface
+* Support Struct define **Validater() error** interface
 * Support slice/array/pointer and netestd struct validate. Not for map now!
 
 
@@ -32,7 +32,8 @@ package main
 
 import (
 	"fmt"
-	"validation"
+
+	"github.com/DavadDi/validation"
 )
 
 // ex01 simple use
@@ -57,10 +58,10 @@ func main() {
 	validater := validation.NewValidation()
 	res := validater.Validate(person1)
 
-	if !res {
-		fmt.Printf("Person1 validate failed. %s", validater.ErrMsg())
-	} else {
+	if res {
 		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s", validater.ErrMsg())
 	}
 
 	validater.Reset()
@@ -90,14 +91,15 @@ func main() {
 
 ## Add Use Define Validater
 
-Use define validater need impl the interface **Validater(v interface{}) error** and add it to validation.
+Use define validater **func(v interface{}) error** and add it to validation.
 
 ```go
 package main
 
 import (
 	"fmt"
-	"validation"
+
+	"github.com/DavadDi/validation"
 )
 
 type Person struct {
@@ -108,16 +110,13 @@ type Person struct {
 	WebSites []string `valid:"url"`
 }
 
-type AgeChecker struct {
-}
-
-func (ac *AgeChecker) Validater(v interface{}) error {
+func ageChecker(v interface{}) error {
 	age, ok := v.(int)
 	if !ok {
 		return validation.NewErrWrongType("int", v)
 	}
 
-	if age < 0 || age > 140 {
+	if age <= 0 || age > 140 {
 		return fmt.Errorf("age checke failed. should between [1-140], now %d", age)
 	}
 
@@ -125,9 +124,7 @@ func (ac *AgeChecker) Validater(v interface{}) error {
 }
 
 func main() {
-	validation.Debug(true)
-
-	validation.AddValidater("age", &AgeChecker{})
+	validation.AddValidater("age", ageChecker)
 
 	person1 := &Person{
 		Name:  "dave",
@@ -137,12 +134,13 @@ func main() {
 	validater := validation.NewValidation()
 	res := validater.Validate(person1)
 
-	if !res {
-		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
-	} else {
+	if res {
 		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
 	}
 }
+
 ```
 
 ### Output:
@@ -150,14 +148,17 @@ func main() {
 	Person1 validate failed. [Age] check failed [field can't be empty or zero] [0]
 
 ## Collaborate with Struct Interface
-Use struct define validater need impl the interface **TValidater() error**.
+Use struct define validater need impl the interface **Validater() error**.
+
 ```go
+
 package main
 
 import (
 	"fmt"
 	"log"
-	"validation"
+
+	"github.com/DavadDi/validation"
 )
 
 type Person struct {
@@ -168,7 +169,7 @@ type Person struct {
 	WebSites []string `valid:"url"`
 }
 
-func (p *Person) TValidater() error {
+func (p *Person) Validater() error {
 	log.Println("In our struct validater now")
 	if p.Age <= 0 || p.Age > 140 {
 		return fmt.Errorf("age checke failed. should between [1-140], now %d", p.Age)
@@ -188,12 +189,13 @@ func main() {
 	validater := validation.NewValidation()
 	res := validater.Validate(person1)
 
-	if !res {
-		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
-	} else {
+	if res {
 		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
 	}
 }
+
 
 ```
 

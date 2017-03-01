@@ -64,9 +64,7 @@ var (
 	rxURL            = regexp.MustCompile(URL)
 )
 
-type EmailChecker struct{}
-
-func (eck *EmailChecker) Validater(v interface{}) error {
+func emailChecker(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return NewErrWrongType("string", v)
@@ -79,9 +77,7 @@ func (eck *EmailChecker) Validater(v interface{}) error {
 	return ErrBadEmailFormat
 }
 
-type RequiredChecker struct{}
-
-func (rck *RequiredChecker) Validater(v interface{}) error {
+func requiredChecker(v interface{}) error {
 	// Ignore performance, tmp for now
 	// ex: beggo: https://github.com/astaxie/beego/blob/master/validation/validators.go#L95
 	// Debugf("RequiredChecker %#v", v)
@@ -93,9 +89,7 @@ func (rck *RequiredChecker) Validater(v interface{}) error {
 	return nil
 }
 
-type UrlChecker struct{}
-
-func (uck *UrlChecker) Validater(v interface{}) error {
+func urlChecker(v interface{}) error {
 
 	str, ok := v.(string)
 	if !ok {

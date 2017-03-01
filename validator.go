@@ -69,14 +69,16 @@ import (
 // Interface
 // For use define stuct, without params
 // If validate struct has this interface, we will call this interface firstly
-type TValidater interface {
-	TValidater() error
+type Validater interface {
+	Validater() error
 }
 
+type ValidaterFunc func(v interface{}) error
+
 // Interface for Validators
-type Validater interface {
-	Validater(v interface{}) error
-}
+//type Validater interface {
+//	Validater(v interface{}) error
+//}
 
 // Global var for validation pkg
 const (
@@ -88,10 +90,10 @@ const (
 
 var (
 	// Init by this pkg. no need rwlock
-	validatorsMap = map[string]Validater{
-		RequiredKey: &RequiredChecker{},
-		"email":     &EmailChecker{},
-		"url":       &UrlChecker{},
+	validatorsMap = map[string]ValidaterFunc{
+		RequiredKey: requiredChecker,
+		"email":     emailChecker,
+		"url":       urlChecker,
 	}
 
 	// Using rwlock avoid race
@@ -122,12 +124,12 @@ func EnableDebug(flag bool) {
 // Return a new custom validater manager
 func newCustomValidators() *CustomValidators {
 	return &CustomValidators{
-		validatorsMap: make(map[string]Validater),
+		validatorsMap: make(map[string]ValidaterFunc),
 	}
 }
 
 // Function export to add user define Validater
-func AddValidater(name string, validater Validater) error {
+func AddValidater(name string, validater ValidaterFunc) error {
 	if customValidatorsMap == nil {
 		customValidatorsMap = newCustomValidators()
 	}
@@ -137,13 +139,13 @@ func AddValidater(name string, validater Validater) error {
 
 // Because user can add user define validater, avoid data race, add rwlock
 type CustomValidators struct {
-	validatorsMap map[string]Validater
+	validatorsMap map[string]ValidaterFunc
 	sync.RWMutex
 }
 
 // If name conflict with CustomValidators, replace.
 // conflict with validatorsMap, return err
-func (cvm *CustomValidators) AddValidater(name string, validater Validater) error {
+func (cvm *CustomValidators) AddValidater(name string, validater ValidaterFunc) error {
 	// check validater
 	if validater == nil {
 		return ErrValidater
@@ -162,7 +164,7 @@ func (cvm *CustomValidators) AddValidater(name string, validater Validater) erro
 }
 
 // Return user define validater for namego
-func (cvm *CustomValidators) findValidater(name string) (v Validater, ok bool) {
+func (cvm *CustomValidators) findValidater(name string) (v ValidaterFunc, ok bool) {
 	cvm.RLock()
 	v, ok = cvm.validatorsMap[name]
 	cvm.RUnlock()
@@ -230,9 +232,9 @@ func (mv *Validation) Validate(obj interface{}) bool {
 
 	debugf("Check struct [%s]", t.Name())
 
-	objvk, ok := obj.(TValidater)
+	objvk, ok := obj.(Validater)
 	if ok {
-		err := objvk.TValidater()
+		err := objvk.Validater()
 		if err != nil {
 			mv.addError("Object", obj, err)
 		}
@@ -266,7 +268,7 @@ func (mv *Validation) Validate(obj interface{}) bool {
 
 func (mv *Validation) checkRequire(v reflect.Value, t reflect.StructField) error {
 	rck := validatorsMap[RequiredKey]
-	return rck.Validater(v.Interface())
+	return rck(v.Interface())
 }
 
 // Valid struct field type
@@ -300,7 +302,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 			debugf("CheckerName: [%s]", fname)
 
 			// find custom map and pkg map
-			var vck Validater
+			var vck ValidaterFunc
 			var find bool
 
 			if vck, find = customValidatorsMap.findValidater(fname); !find {
@@ -314,7 +316,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 				continue
 			}
 
-			err := vck.Validater(v.Interface())
+			err := vck(v.Interface())
 			if err != nil {
 				mv.addError(t.Name, v.Interface(), err)
 			}

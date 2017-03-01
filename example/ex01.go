@@ -28,10 +28,10 @@ func main() {
 	validater := validation.NewValidation()
 	res := validater.Validate(person1)
 
-	if !res {
-		fmt.Printf("Person1 validate failed. %s", validater.ErrMsg())
-	} else {
+	if res {
 		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s", validater.ErrMsg())
 	}
 
 	validater.Reset()

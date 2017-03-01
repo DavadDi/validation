@@ -96,10 +96,8 @@ func TestEmail(t *testing.T) {
 		{"13455", false},
 	}
 
-	eck := &EmailChecker{}
-
 	for _, test := range tests {
-		err := eck.Validater(test.Email)
+		err := emailChecker(test.Email)
 		res := (err == nil)
 
 		if res != test.Expect {
@@ -146,10 +144,7 @@ func TestNestedStruct(t *testing.T) {
 	EnableDebug(false)
 }
 
-type NameUpperChecker struct {
-}
-
-func (my *NameUpperChecker) Validater(v interface{}) error {
+func upperChecker(v interface{}) error {
 	name, ok := v.(string)
 	if !ok {
 		return NewErrWrongType("string", v)
@@ -163,7 +158,7 @@ func (my *NameUpperChecker) Validater(v interface{}) error {
 	return nil
 }
 func TestCustomValidater(t *testing.T) {
-	AddValidater("upper", &NameUpperChecker{})
+	AddValidater("upper", upperChecker)
 
 	person := struct {
 		Name     string    `valid:"required;upper"`
@@ -185,14 +180,14 @@ func TestCustomValidater(t *testing.T) {
 }
 
 func TestCustomValidaterConflict(t *testing.T) {
-	err := AddValidater("upper", &NameUpperChecker{})
+	err := AddValidater("upper", upperChecker)
 
 	// should replace
 	if err != nil {
 		t.Errorf("AddValidater should succeed. but got %s\n", err.Error())
 	}
 
-	err = AddValidater("email", &NameUpperChecker{})
+	err = AddValidater("email", upperChecker)
 	if err != ErrValidaterExists {
 		t.Errorf("AddValidater should failed [ErrValidaterExists]. but got %s\n", err.Error())
 	}

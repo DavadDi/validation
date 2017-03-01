@@ -14,10 +14,7 @@ type Person struct {
 	WebSites []string `valid:"url"`
 }
 
-type AgeChecker struct {
-}
-
-func (ac *AgeChecker) Validater(v interface{}) error {
+func ageChecker(v interface{}) error {
 	age, ok := v.(int)
 	if !ok {
 		return validation.NewErrWrongType("int", v)
@@ -31,7 +28,7 @@ func (ac *AgeChecker) Validater(v interface{}) error {
 }
 
 func main() {
-	validation.AddValidater("age", &AgeChecker{})
+	validation.AddValidater("age", ageChecker)
 
 	person1 := &Person{
 		Name:  "dave",
@@ -41,9 +38,9 @@ func main() {
 	validater := validation.NewValidation()
 	res := validater.Validate(person1)
 
-	if !res {
-		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
-	} else {
+	if res {
 		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
 	}
 }
