@@ -208,7 +208,7 @@ func (mv *Validation) HasError() bool {
 	return len(mv.Errors) != 0
 }
 
-// Validiton entry function.
+// Validation entry function.
 // True: Validiton passed.
 // False: Validate don't passed, mv.ErrMsg() contains the detail info.
 func (mv *Validation) Validate(obj interface{}) bool {
