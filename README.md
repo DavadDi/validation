@@ -8,6 +8,8 @@ The Simpler Validation in go.
 * Support Struct define **Validater() error** interface
 * Support slice/array/pointer and netestd struct validate. Not for map now!
 
+[![Build Status](http://img.shields.io/travis/DavadDi/validation.svg?style=flat-square)](https://travis-ci.org/DavadDi/validation)
+[![Coverage Status](http://img.shields.io/coveralls/DavadDi/validation.svg?style=flat-square)](https://coveralls.io/r/DavadDi/validation)
 
 ## Install and tests
 
