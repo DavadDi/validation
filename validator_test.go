@@ -157,6 +157,33 @@ func upperChecker(v interface{}) error {
 
 	return nil
 }
+
+func Bool(a bool) *bool {
+	return &a
+}
+
+func TestPtrRequired(t *testing.T) {
+
+	person := struct {
+		Name     string    `valid:"required;upper"`
+		Email    string    `valid:"required;email"`
+		Admin    *bool     `valid:"required"`
+		Sex      int       ``
+		WebSites []*string `valid:"url"`
+	}{
+		Name:  "Dave",
+		Email: "aa@aa.com",
+		Admin: Bool(false),
+	}
+
+	validor := NewValidation()
+	res := validor.Validate(person)
+
+	if !res {
+		t.Errorf("TestPtrRequired should succeed %s\n", validor.ErrMsg())
+	}
+}
+
 func TestCustomValidater(t *testing.T) {
 	AddValidater("upper", upperChecker)
 

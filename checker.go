@@ -80,7 +80,7 @@ func emailChecker(v interface{}) error {
 func requiredChecker(v interface{}) error {
 	// Ignore performance, tmp for now
 	// ex: beggo: https://github.com/astaxie/beego/blob/master/validation/validators.go#L95
-	// Debugf("RequiredChecker %#v", v)
+	debugf("RequiredChecker %#v", v)
 	if reflect.DeepEqual(v, reflect.Zero(reflect.TypeOf(v)).Interface()) {
 		return ErrRequired
 	}

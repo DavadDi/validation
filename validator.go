@@ -256,7 +256,7 @@ func (mv *Validation) Validate(obj interface{}) bool {
 			continue
 		}
 
-		mv.typeCheck(vf, tf, v)
+		mv.typeCheck(vf, tf, v, false)
 	}
 
 	if mv.HasError() {
@@ -271,13 +271,21 @@ func (mv *Validation) checkRequire(v reflect.Value, t reflect.StructField) error
 	return rck(v.Interface())
 }
 
-// Valid struct field type
-func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value) {
+func (mv *Validation) typeCheckPtr(v reflect.Value, t reflect.StructField, o reflect.Value) {
+
+}
+
+// Valid struct field type, if typeCheck is ptr, wo just check ptr for required, not for element
+func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, ignoreRequired bool) {
 	fns := mv.getValidFuns(t, ValidTag)
 
 	// skip
 	if len(fns) == 0 {
 		return
+	}
+
+	if ignoreRequired {
+		delete(fns, RequiredKey)
 	}
 
 	// First check all field for required
@@ -325,7 +333,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 	case reflect.Slice:
 		for i := 0; i < v.Len(); i++ {
 			if v.Index(i).Kind() != reflect.Struct {
-				mv.typeCheck(v.Index(i), t, o)
+				mv.typeCheck(v.Index(i), t, o, false)
 			} else {
 				mv.Validate(v.Index(i).Interface())
 			}
@@ -334,7 +342,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 	case reflect.Array:
 		for i := 0; i < v.Len(); i++ {
 			if v.Index(i).Kind() != reflect.Struct {
-				mv.typeCheck(v.Index(i), t, o)
+				mv.typeCheck(v.Index(i), t, o, false)
 			} else {
 				mv.Validate(v.Index(i).Interface())
 			}
@@ -350,7 +358,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 		// only check
 		// If the value is a pointer then check its element
 		if !v.IsNil() {
-			mv.typeCheck(v.Elem(), t, o)
+			mv.typeCheck(v.Elem(), t, o, true)
 		}
 
 	case reflect.Struct:
