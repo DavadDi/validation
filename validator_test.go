@@ -165,7 +165,7 @@ func Bool(a bool) *bool {
 func TestPtrRequired(t *testing.T) {
 
 	person := struct {
-		Name     string    `valid:"required;upper"`
+		Name     string    `valid:"required"`
 		Email    string    `valid:"required;email"`
 		Admin    *bool     `valid:"required"`
 		Sex      int       ``
