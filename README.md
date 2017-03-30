@@ -257,7 +257,7 @@ func main() {
  web pass json struct:
  ```json
  {
-    name: "dave"
+    "name": "dave"
  }
 ```
 
