@@ -330,16 +330,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 			}
 		}
 
-	case reflect.Slice:
-		for i := 0; i < v.Len(); i++ {
-			if v.Index(i).Kind() != reflect.Struct {
-				mv.typeCheck(v.Index(i), t, o, false)
-			} else {
-				mv.Validate(v.Index(i).Interface())
-			}
-		}
-
-	case reflect.Array:
+	case reflect.Slice, reflect.Array:
 		for i := 0; i < v.Len(); i++ {
 			if v.Index(i).Kind() != reflect.Struct {
 				mv.typeCheck(v.Index(i), t, o, false)
