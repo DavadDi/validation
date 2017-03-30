@@ -206,6 +206,74 @@ func main() {
 	2017/02/28 10:29:34 In our struct validater now
 	Person1 validate failed. [Object] check failed [age checke failed. should between [1-140], now 0] [&main.Person{Name:"dave", Email:"dwh0403@163.com", Age:0, Sex:0, WebSites:[]string(nil)}]
 
+## Check Ptr Field for Requried
+```go
+
+package main
+
+import (
+	"fmt"
+
+	"github.com/DavadDi/validation"
+)
+
+func Bool(a bool) *bool {
+	return &a
+}
+
+type Person struct {
+	Name     string `valid:"required"`
+	Email    string `valid:"required;email"`
+	Age      int
+	Sex      int
+	IsAdmin  *bool    `valid:"required"`  // check IsAmdin has or not
+	WebSites []string `valid:"url"`
+}
+
+func main() {
+	// Turn on debug
+	validation.EnableDebug(true)
+	person1 := &Person{
+		Name:  "dave",
+		Email: "dwh0403@163.com",
+
+		IsAdmin: Bool(false),
+	}
+
+	validater := validation.NewValidation()
+	res := validater.Validate(person1)
+
+	if res {
+		fmt.Println("Person1 validate succeed!")
+	} else {
+		fmt.Printf("Person1 validate failed. %s\n", validater.ErrMsg())
+	}
+}
+
+```    
+
+ Why used **IsAdmin  *bool**, because sometime, we recv data from RESTFUL interface, for example:
+ 
+ web pass json struct:
+ ```json
+ {
+    name: "dave"
+ }
+```
+
+ In go program, we define the struct below, need the both  value **name** && **isAdmin** 
+ 
+ ```go
+type Person struct {
+	Name     *string `valid:"required" json:"name"`
+	IsAdmin  *bool    `valid:"required" json:"isAdmin"` 
+}
+```
+
+After call **json.Marshal**, valid **required** on field ptr can meet the situation.
+
+
+
 ## Debug
 
 Turn on Debug

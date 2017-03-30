@@ -342,7 +342,7 @@ func (mv *Validation) typeCheck(v reflect.Value, t reflect.StructField, o reflec
 	case reflect.Interface:
 		// If the value is an interface then encode its element
 		if !v.IsNil() {
-			mv.Validate(v.Interface())
+			mv.Validate(v.Elem())
 		}
 
 	case reflect.Ptr:
