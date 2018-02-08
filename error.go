@@ -6,28 +6,14 @@ import (
 	"reflect"
 )
 
+// Error for Validater
 var (
-	// Error for Validater impl
-
-	// ErrBadURLFormat for url
-	ErrBadURLFormat = errors.New("url format is not valid")
-
-	// ErrBadEmailFormat for email
-	ErrBadEmailFormat = errors.New("email format is not valid")
-
-	// ErrRequired for Required
-	ErrRequired = errors.New("field can't be empty or zero")
-
-	// Error for Validater
-
-	// ErrValidater validater not exist
-	ErrValidater = errors.New("validater should not be nil")
-
-	// ErrValidaterNoFound can't find corresponding validater
+	ErrBadURLFormat     = errors.New("url format is not valid")
+	ErrBadEmailFormat   = errors.New("email format is not valid")
+	ErrRequired         = errors.New("field can't be empty or zero")
+	ErrValidater        = errors.New("validater should not be nil")
 	ErrValidaterNoFound = errors.New("validater not found")
-
-	// ErrValidaterExists for registe validator repeatedly
-	ErrValidaterExists = errors.New("validater exist")
+	ErrValidaterExists  = errors.New("validater exist")
 )
 
 // Error for Validator, including filedname, value, err msg.

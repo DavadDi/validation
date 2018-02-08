@@ -1,6 +1,6 @@
 validation
 =====================
- 
+
 The Simpler Validation in go. 
 
 * Use **func(v interface{}) error** for Validater
@@ -250,25 +250,25 @@ func main() {
 	}
 }
 
-```    
+```
 
  Why used **IsAdmin  *bool**, because sometime, we recv data from RESTFUL interface, for example:
- 
+
  web pass json struct:
  ```json
  {
     "name": "dave"
  }
-```
+ ```
 
  In go program, we define the struct below, need the both  value **name** && **isAdmin** 
- 
+
  ```go
 type Person struct {
 	Name     *string `valid:"required" json:"name"`
 	IsAdmin  *bool    `valid:"required" json:"isAdmin"` 
 }
-```
+ ```
 
 After call **json.Marshal**, valid **required** on field ptr can meet the situation.
 
@@ -290,5 +290,5 @@ validation.EnableDebug(false)
 
 ## LICENSE
 
-BSD License http://creativecommons.org/licenses/BSD/
+MIT License https://choosealicense.com/licenses/mit/  More See https://choosealicense.com/licenses/
 
