@@ -99,21 +99,21 @@ func urlChecker(v interface{}) error {
 	debugf("UrlChecker: got [%s]", str)
 
 	if str == "" || utf8.RuneCountInString(str) >= maxURLRuneCount || len(str) <= minURLRuneCount || strings.HasPrefix(str, ".") {
-		return ErrBadUrlFormat
+		return ErrBadURLFormat
 	}
 	u, err := url.Parse(str)
 	if err != nil {
-		return ErrBadUrlFormat
+		return ErrBadURLFormat
 	}
 	if strings.HasPrefix(u.Host, ".") {
-		return ErrBadUrlFormat
+		return ErrBadURLFormat
 	}
 	if u.Host == "" && (u.Path != "" && !strings.Contains(u.Path, ".")) {
-		return ErrBadUrlFormat
+		return ErrBadURLFormat
 	}
 
 	if !rxURL.MatchString(str) {
-		return ErrBadUrlFormat
+		return ErrBadURLFormat
 	}
 
 	debugf("UrlChecker: [%s] passed", str)

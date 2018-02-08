@@ -6,10 +6,12 @@ import (
 	"github.com/DavadDi/validation"
 )
 
+// Bool convert bool -> *bool
 func Bool(a bool) *bool {
 	return &a
 }
 
+// Person for test struct
 type Person struct {
 	Name     string `valid:"required"`
 	Email    string `valid:"required;email"`

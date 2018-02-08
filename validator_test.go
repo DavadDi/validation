@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// Person for test struct
 type Person struct {
 	Name     *string   `valid:"required"`
 	Email    string    `valid:"required;email"`
@@ -109,7 +110,7 @@ func TestEmail(t *testing.T) {
 
 type AddFile struct {
 	FileName string `valid:"required"`
-	Url      string `valid:"-"`
+	URL      string `valid:"-"`
 }
 
 func TestNestedStruct(t *testing.T) {

@@ -7,6 +7,7 @@ import (
 	"github.com/DavadDi/validation"
 )
 
+// Person for test struct
 type Person struct {
 	Name     string `valid:"required"`
 	Email    string `valid:"required;email"`
@@ -15,6 +16,7 @@ type Person struct {
 	WebSites []string `valid:"url"`
 }
 
+// Validater for person
 func (p *Person) Validater() error {
 	log.Println("In our struct validater now")
 	if p.Age <= 0 || p.Age > 140 {

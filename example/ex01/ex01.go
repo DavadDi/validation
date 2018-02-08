@@ -6,7 +6,7 @@ import (
 	"github.com/DavadDi/validation"
 )
 
-// ex01 simple use
+// Person for test struct
 type Person struct {
 	Name     string   `valid:"required"`
 	Email    string   `valid:"required;email"`

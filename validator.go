@@ -66,13 +66,13 @@ import (
 //		}
 //	}
 
-// Interface
-// For use define stuct, without params
+// Validater Interface For use define stuct, without params
 // If validate struct has this interface, we will call this interface firstly
 type Validater interface {
 	Validater() error
 }
 
+// ValidaterFunc type
 type ValidaterFunc func(v interface{}) error
 
 // Interface for Validators
@@ -116,7 +116,7 @@ func debugf(format string, args ...interface{}) {
 	}
 }
 
-// Enable validation debug log
+// EnableDebug enable validation debug log
 func EnableDebug(flag bool) {
 	debugFlag = flag
 }
@@ -128,7 +128,7 @@ func newCustomValidators() *CustomValidators {
 	}
 }
 
-// Function export to add user define Validater
+// AddValidater Function export to add user define Validater
 func AddValidater(name string, validater ValidaterFunc) error {
 	if customValidatorsMap == nil {
 		customValidatorsMap = newCustomValidators()
@@ -137,13 +137,13 @@ func AddValidater(name string, validater ValidaterFunc) error {
 	return customValidatorsMap.AddValidater(name, validater)
 }
 
-// Because user can add user define validater, avoid data race, add rwlock
+// CustomValidators Because user can add user define validater, avoid data race, add rwlock
 type CustomValidators struct {
 	validatorsMap map[string]ValidaterFunc
 	sync.RWMutex
 }
 
-// If name conflict with CustomValidators, replace.
+// AddValidater If name conflict with CustomValidators, replace.
 // conflict with validatorsMap, return err
 func (cvm *CustomValidators) AddValidater(name string, validater ValidaterFunc) error {
 	// check validater
@@ -177,16 +177,17 @@ type Validation struct {
 	Errors []*Error
 }
 
+// NewValidation create a new validation
 func NewValidation() *Validation {
 	return &Validation{}
 }
 
-// Return Error list
+// Errs Return Error list
 func (mv *Validation) Errs() []*Error {
 	return mv.Errors
 }
 
-// Return msg detail Error message
+// ErrMsg Return msg detail Error message
 func (mv *Validation) ErrMsg() string {
 	buf := bytes.NewBufferString("")
 
@@ -198,21 +199,22 @@ func (mv *Validation) ErrMsg() string {
 	return buf.String()
 }
 
-// Reset state to init
+// Reset reset state to init
 func (mv *Validation) Reset() {
 	mv.clear()
 }
 
-// Check has errors or not
+// HasError Check has errors or not
 func (mv *Validation) HasError() bool {
 	return len(mv.Errors) != 0
 }
 
-// Validation entry function.
+// Validate entry function.
 // True: Validiton passed.
 // False: Validate don't passed, mv.ErrMsg() contains the detail info.
 func (mv *Validation) Validate(obj interface{}) bool {
 	if obj == nil {
+		debug("obj == nil")
 		return true
 	}
 
