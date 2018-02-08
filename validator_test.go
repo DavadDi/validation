@@ -127,8 +127,8 @@ func TestNestedStruct(t *testing.T) {
 	}{
 		Name:    "dave",
 		Email:   "aa@aa.com",
-		FileAdd: []*AddFile{&AddFile{FileName: "file1"}, &AddFile{FileName: "file2"}},
-		FileDel: []AddFile{AddFile{FileName: "file1"}, AddFile{FileName: "file2"}},
+		FileAdd: []*AddFile{{FileName: "file1"}, {FileName: "file2"}},
+		FileDel: []AddFile{{FileName: "file1"}, {FileName: "file2"}},
 	}
 
 	validor := NewValidation()
